@@ -1,6 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include <libraycaster/sample_library.hpp>
+#include <libraycaster/geometry.hpp>
 
 TEST_CASE("Factorials are computed with constexpr", "[factorial]")
 {
