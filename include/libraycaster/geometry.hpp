@@ -7,13 +7,13 @@
 #include <vector>
 
 namespace lefticus::geometry {
-template<std::floating_point FP> inline constexpr auto DISTANT_POINT_v = static_cast<FP>(100);
+template<std::floating_point FP> inline constexpr auto DISTANT_POINT_v = static_cast<FP>(1000);
 
 // Floating point math is hard, and trying to find a point on a line
 // can result in some mismatches in floating point values, so we go for "close"
 template<std::floating_point FP> bool in_range(FP min_, FP max_, FP value)
 {
-  return ((min_ - 0.0000001) <= value) and (value <= (max_ + 0.0000001));
+  return ((min_ - static_cast<FP>(0.0000001)) <= value) and (value <= (max_ + static_cast<FP>(0.0000001)));
 }
 
 template<std::floating_point FP> struct Ray;
@@ -125,7 +125,18 @@ template<std::floating_point FP> struct Segment
 
     // Correct from angle above x axis as returned by atan2, to angle
     // away from y axis, as is in our coordinate system
-    return Ray<FP>{ start, -std::atan2(end.y - start.y, end.x - start.x) + std::numbers::pi_v<FP> / 2 };
+    const auto new_angle = -std::atan2(end.y - start.y, end.x - start.x) + std::numbers::pi_v<FP> / 2;
+    const auto normalized_angle = std::fmod(new_angle, std::numbers::pi_v<FP> * 2);
+    const auto non_negative_angle = [=] {
+      if (normalized_angle < 0) {
+        return normalized_angle + std::numbers::pi_v<FP> * 2;
+      } else {
+        return new_angle;
+      }
+    }();
+
+
+    return Ray<FP>{ start, non_negative_angle };
   }
 };
 
