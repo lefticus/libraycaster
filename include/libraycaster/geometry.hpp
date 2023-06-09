@@ -1,3 +1,6 @@
+#ifndef LEFTICUS_RAYCASTER_GEOMETRY_HPP
+#define LEFTICUS_RAYCASTER_GEOMETRY_HPP
+
 #include <cmath>
 #include <concepts>
 #include <numbers>
@@ -189,3 +192,6 @@ template<std::floating_point FP>
   return result;
 }
 }// namespace lefticus::geometry
+
+
+#endif

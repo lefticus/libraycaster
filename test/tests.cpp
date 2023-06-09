@@ -1,6 +1,7 @@
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
+#include <libraycaster/camera.hpp>
 #include <libraycaster/geometry.hpp>
 
 
@@ -8,15 +9,16 @@ template<std::floating_point FP> struct Approx
 {
   FP value;
 
-  constexpr static auto get_diff() noexcept {
-    if constexpr (sizeof(FP) == 2) { // NOLINT
-      return std::numeric_limits<FP>::epsilon() * 100; // NOLINT
-    } else if constexpr (sizeof(FP) == 4) { // NOLINT
-      return std::numeric_limits<FP>::epsilon() * 1000; // NOLINT
-    } else if constexpr (sizeof(FP) == 8) { // NOLINT
-      return std::numeric_limits<FP>::epsilon() * 1000; // NOLINT
-    } else if constexpr (sizeof(FP) == 16) { // NOLINT
-      return std::numeric_limits<FP>::epsilon() * 100000; // NOLINT
+  constexpr static auto get_diff() noexcept
+  {
+    if constexpr (sizeof(FP) == 2) {// NOLINT
+      return std::numeric_limits<FP>::epsilon() * 100;// NOLINT
+    } else if constexpr (sizeof(FP) == 4) {// NOLINT
+      return std::numeric_limits<FP>::epsilon() * 1000;// NOLINT
+    } else if constexpr (sizeof(FP) == 8) {// NOLINT
+      return std::numeric_limits<FP>::epsilon() * 1000;// NOLINT
+    } else if constexpr (sizeof(FP) == 16) {// NOLINT
+      return std::numeric_limits<FP>::epsilon() * 100000;// NOLINT
     }
   }
 
@@ -144,8 +146,8 @@ TEMPLATE_TEST_CASE("Test Ray Properties", "[geometry]", float, double, long doub
     lefticus::geometry::Segment<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 },
       lefticus::geometry::Point<TestType>{ 0, -lefticus::geometry::DISTANT_POINT_v<TestType> } });
 
-  const auto two_seventy_angle =
-    lefticus::geometry::Ray<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 }, TestType{3} / TestType{2} * std::numbers::pi_v<TestType> };
+  const auto two_seventy_angle = lefticus::geometry::Ray<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 },
+    TestType{ 3 } / TestType{ 2 } * std::numbers::pi_v<TestType> };
   expected_values(two_seventy_angle,
     lefticus::geometry::Segment<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 },
       lefticus::geometry::Point<TestType>{ -lefticus::geometry::DISTANT_POINT_v<TestType>, 0 } });
@@ -169,7 +171,7 @@ TEMPLATE_TEST_CASE("Test Ray Segment Round Trip", "[geometry]", float, double, l
   const auto angle_180 =
     lefticus::geometry::Ray<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 }, std::numbers::pi_v<TestType> };
   const auto angle_270 = lefticus::geometry::Ray<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 },
-    TestType{3} / TestType{2} * std::numbers::pi_v<TestType> };
+    TestType{ 3 } / TestType{ 2 } * std::numbers::pi_v<TestType> };
   const auto angle_405 = lefticus::geometry::Ray<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 },
     2 * std::numbers::pi_v<TestType> + std::numbers::pi_v<TestType> / 4 };
 
@@ -253,20 +255,20 @@ TEMPLATE_TEST_CASE("Test Intersect Ray To Diagonal", "[geometry]", float, double
 }
 
 
-/*
-TEMPLATE_TEST_CASE("Test Camera Ray To Diagonal", "[geometry]")
+TEMPLATE_TEST_CASE("Test Camera Ray To Diagonal", "[geometry]", float, double, long double)
 {
-  const auto camera =
-    raycasting.Camera(lefticus::geometry::Point<TestType>(10, 5), std::numbers::pi_v<TestType>,
-std::numbers::pi_v<TestType> / 4); const auto segment =
-    lefticus::geometry::Segment(lefticus::geometry::Point<TestType>(0, 0), lefticus::geometry::Point<TestType>(20, 0));
-  const auto segment2 =
-    lefticus::geometry::Segment(lefticus::geometry::Point<TestType>(0, 0), lefticus::geometry::Point<TestType>(40,
--40));
+  const auto camera = Camera<TestType>{
+    lefticus::geometry::Point<TestType>{ 10, 5 }, std::numbers::pi_v<TestType>, std::numbers::pi_v<TestType> / 4
+  };
+
+  const std::array segments{ lefticus::geometry::Segment<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 },
+                               lefticus::geometry::Point<TestType>{ 20, 0 } },
+    lefticus::geometry::Segment<TestType>{
+      lefticus::geometry::Point<TestType>{ 0, 0 }, lefticus::geometry::Point<TestType>{ 40, -40 } } };
 
   for (const auto &[ray, point] : camera.rays(10)) {
-    const auto intersections = lefticus::geometry::intersect_ray(ray, [ segment, segment2 ]);
-    CHECK(len(intersections) == 2);
+    const auto intersections =
+      lefticus::geometry::intersect_ray(ray, std::span<const lefticus::geometry::Segment<TestType>>(segments));
+    CHECK(intersections.size() == 2);
   }
 }
-*/
