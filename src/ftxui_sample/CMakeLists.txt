@@ -2,7 +2,8 @@ add_executable(intro main.cpp)
 
 target_link_libraries(
   intro
-  PRIVATE libraycaster::libraycaster_options
+  PRIVATE libraycaster::libraycaster
+          libraycaster::libraycaster_options
           libraycaster::libraycaster_warnings)
 
 target_link_system_libraries(

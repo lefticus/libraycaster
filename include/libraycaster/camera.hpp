@@ -4,6 +4,7 @@
 #include "geometry.hpp"
 #include <ranges>
 
+namespace lefticus::geometry {
 template<std::floating_point FP> struct Camera
 {
   lefticus::geometry::Point<FP> location{};
@@ -67,5 +68,5 @@ template<std::floating_point FP> struct Camera
              });
   }
 };
-
+}// namespace lefticus::geometry
 #endif

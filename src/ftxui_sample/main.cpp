@@ -18,150 +18,8 @@
 // the source template at `configured_files/config.hpp.in`.
 #include <internal_use_only/config.hpp>
 
-template<std::size_t Width, std::size_t Height> struct GameBoard
-{
-  static constexpr std::size_t width = Width;
-  static constexpr std::size_t height = Height;
-
-  std::array<std::array<std::string, height>, width> strings;
-  std::array<std::array<bool, height>, width> values{};
-
-  std::size_t move_count{ 0 };
-
-  std::string &get_string(std::size_t cur_x, std::size_t cur_y) { return strings.at(cur_x).at(cur_y); }
-
-
-  void set(std::size_t cur_x, std::size_t cur_y, bool new_value)
-  {
-    get(cur_x, cur_y) = new_value;
-
-    if (new_value) {
-      get_string(cur_x, cur_y) = " ON";
-    } else {
-      get_string(cur_x, cur_y) = "OFF";
-    }
-  }
-
-  void visit(auto visitor)
-  {
-    for (std::size_t cur_x = 0; cur_x < width; ++cur_x) {
-      for (std::size_t cur_y = 0; cur_y < height; ++cur_y) { visitor(cur_x, cur_y, *this); }
-    }
-  }
-
-  [[nodiscard]] bool get(std::size_t cur_x, std::size_t cur_y) const { return values.at(cur_x).at(cur_y); }
-
-  [[nodiscard]] bool &get(std::size_t cur_x, std::size_t cur_y) { return values.at(cur_x).at(cur_y); }
-
-  GameBoard()
-  {
-    visit([](const auto cur_x, const auto cur_y, auto &gameboard) { gameboard.set(cur_x, cur_y, true); });
-  }
-
-  void update_strings()
-  {
-    for (std::size_t cur_x = 0; cur_x < width; ++cur_x) {
-      for (std::size_t cur_y = 0; cur_y < height; ++cur_y) { set(cur_x, cur_y, get(cur_x, cur_y)); }
-    }
-  }
-
-  void toggle(std::size_t cur_x, std::size_t cur_y) { set(cur_x, cur_y, !get(cur_x, cur_y)); }
-
-  void press(std::size_t cur_x, std::size_t cur_y)
-  {
-    ++move_count;
-    toggle(cur_x, cur_y);
-    if (cur_x > 0) { toggle(cur_x - 1, cur_y); }
-    if (cur_y > 0) { toggle(cur_x, cur_y - 1); }
-    if (cur_x < width - 1) { toggle(cur_x + 1, cur_y); }
-    if (cur_y < height - 1) { toggle(cur_x, cur_y + 1); }
-  }
-
-  [[nodiscard]] bool solved() const
-  {
-    for (std::size_t cur_x = 0; cur_x < width; ++cur_x) {
-      for (std::size_t cur_y = 0; cur_y < height; ++cur_y) {
-        if (!get(cur_x, cur_y)) { return false; }
-      }
-    }
-
-    return true;
-  }
-};
-
-
-void consequence_game()
-{
-  auto screen = ftxui::ScreenInteractive::TerminalOutput();
-
-  GameBoard<3, 3> game_board;
-
-  std::string quit_text;
-
-  const auto update_quit_text = [&quit_text](const auto &game_board_param) {
-    quit_text = fmt::format("Quit ({} moves)", game_board_param.move_count);
-    if (game_board_param.solved()) { quit_text += " Solved!"; }
-  };
-
-  const auto make_buttons = [&] {
-    std::vector<ftxui::Component> buttons;
-    for (std::size_t cur_x = 0; cur_x < game_board.width; ++cur_x) {
-      for (std::size_t cur_y = 0; cur_y < game_board.height; ++cur_y) {
-        buttons.push_back(ftxui::Button(&game_board.get_string(cur_x, cur_y), [=, &game_board] {
-          if (!game_board.solved()) { game_board.press(cur_x, cur_y); }
-          update_quit_text(game_board);
-        }));
-      }
-    }
-    return buttons;
-  };
-
-  auto buttons = make_buttons();
-
-  auto quit_button = ftxui::Button(&quit_text, screen.ExitLoopClosure());
-
-  auto make_layout = [&] {
-    std::vector<ftxui::Element> rows;
-
-    std::size_t idx = 0;
-
-    for (std::size_t cur_x = 0; cur_x < game_board.width; ++cur_x) {
-      std::vector<ftxui::Element> row;
-      for (std::size_t cur_y = 0; cur_y < game_board.height; ++cur_y) {
-        row.push_back(buttons[idx]->Render());
-        ++idx;
-      }
-      rows.push_back(ftxui::hbox(std::move(row)));
-    }
-
-    rows.push_back(ftxui::hbox({ quit_button->Render() }));
-
-    return ftxui::vbox(std::move(rows));
-  };
-
-
-  static constexpr int randomization_iterations = 100;
-  static constexpr int random_seed = 42;
-
-  std::mt19937 gen32{ random_seed };// NOLINT fixed seed
-
-  // NOLINTNEXTLINE This cannot be const
-  std::uniform_int_distribution<std::size_t> cur_x(static_cast<std::size_t>(0), game_board.width - 1);
-  // NOLINTNEXTLINE This cannot be const
-  std::uniform_int_distribution<std::size_t> cur_y(static_cast<std::size_t>(0), game_board.height - 1);
-
-  for (int i = 0; i < randomization_iterations; ++i) { game_board.press(cur_x(gen32), cur_y(gen32)); }
-  game_board.move_count = 0;
-  update_quit_text(game_board);
-
-  auto all_buttons = buttons;
-  all_buttons.push_back(quit_button);
-  auto container = ftxui::Container::Horizontal(all_buttons);
-
-  auto renderer = ftxui::Renderer(container, make_layout);
-
-  screen.Loop(renderer);
-}
+#include <libraycaster/map.hpp>
+#include <libraycaster/renderer.hpp>
 
 struct Color
 {
@@ -178,6 +36,24 @@ struct Bitmap : ftxui::Node
   {}
 
   Color &at(std::size_t cur_x, std::size_t cur_y) { return pixels.at(width_ * cur_y + cur_x); }
+
+  void draw_vertical_line(std::tuple<std::uint8_t, std::uint8_t, std::uint8_t> color,
+    std::size_t x,
+    std::size_t start_y,
+    std::size_t end_y)
+  {
+    for (std::size_t y = start_y; y <= end_y; ++y) { draw({ x, y }, color); }
+  }
+
+  void draw(std::pair<std::size_t, std::size_t> location, std::tuple<std::uint8_t, std::uint8_t, std::uint8_t> color)
+  {
+    if (location.first < width_ && location.second < height_) {
+      at(location.first, location.second) = Color{ std::get<0>(color), std::get<1>(color), std::get<2>(color) };
+    }
+  }
+
+  void clear() { pixels = std::vector<Color>(width_ * height_, Color{}); }
+
 
   void ComputeRequirement() override
   {
@@ -201,7 +77,6 @@ struct Bitmap : ftxui::Node
   }
 
   [[nodiscard]] auto width() const noexcept { return width_; }
-
   [[nodiscard]] auto height() const noexcept { return height_; }
 
   [[nodiscard]] auto &data() noexcept { return pixels; }
@@ -213,17 +88,73 @@ private:
   std::vector<Color> pixels = std::vector<Color>(width_ * height_, Color{});
 };
 
+
+// todo make PR back into FTXUI?
+class CatchEventBase : public ftxui::ComponentBase
+{
+public:
+  // Constructor.
+  explicit CatchEventBase(std::function<bool(ftxui::Event)> on_event) : on_event_(std::move(on_event)) {}
+
+  // Component implementation.
+  bool OnEvent(ftxui::Event event) override
+  {
+    if (on_event_(event)) {
+      return true;
+    } else {
+      return ComponentBase::OnEvent(event);
+    }
+  }
+
+  [[nodiscard]] bool Focusable() const override { return true; }
+
+protected:
+  std::function<bool(ftxui::Event)> on_event_;
+};
+
+ftxui::Component CatchEvent(ftxui::Component child, std::function<bool(ftxui::Event event)> on_event)
+{
+  auto out = Make<CatchEventBase>(std::move(on_event));
+  out->Add(std::move(child));
+  return out;
+}
+
+
 void game_iteration_canvas()
 {
   // this should probably have a `bitmap` helper function that does what cur_you expect
   // similar to the other parts of FTXUI
-  auto bm = std::make_shared<Bitmap>(50, 50);// NOLINT magic numbers
+  auto bm = std::make_shared<Bitmap>(104, 70);// NOLINT magic numbers
   auto small_bm = std::make_shared<Bitmap>(6, 6);// NOLINT magic numbers
 
   double fps = 0;
 
-  std::size_t max_row = 0;
-  std::size_t max_col = 0;
+  constexpr static std::string_view game_map = R"(
+    ###########`&#######
+    #           ` / /  #
+    #/%#/&`&/&`& % `%`&#
+    # / %  / `/% &  /  #
+    #& / `   & / & /%/%#
+    # `&  & `& ` `% ` &#
+    #  % # / `%&  # `& #
+    #% /% %`` / %/& &  #
+    #/% /   &`%/ % /%& #
+    # # //&    %& %`&  #
+    #  % %`  %/     % &#
+    ####################
+    )";
+
+  const auto map_wall_segments = lefticus::geometry::make_map<double>(game_map);
+
+  const auto FOV =
+    2 * std::atan(static_cast<double>(bm->width()) / 200.0) * std::tan((std::numbers::pi_v<double> / 2) / 2);
+
+  auto camera = lefticus::geometry::Camera<double>{
+    lefticus::geometry::Point<double>{ -0.5, -0.5 }, std::numbers::pi_v<double> / 2, FOV
+  };
+
+  std::vector<ftxui::Event> events;
+
 
   // to do, add total game time clock also, not just current elapsed time
   auto game_iteration = [&](const std::chrono::steady_clock::duration elapsed_time) {
@@ -235,35 +166,24 @@ void game_iteration_canvas()
           / (static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(elapsed_time).count())
              / 1'000'000.0);// NOLINT magic numbers
 
-    for (std::size_t row = 0; row < max_row; ++row) {
-      for (std::size_t col = 0; col < bm->width(); ++col) { ++(bm->at(col, row).R); }
+    while (!events.empty()) {
+      const auto current_event = events.front();
+      events.erase(events.begin());
+
+      [&] {
+        if (current_event == ftxui::Event::ArrowUp) {
+          camera.try_move(.1, std::span<const lefticus::geometry::Segment<double>>(map_wall_segments));
+        } else if (current_event == ftxui::Event::ArrowDown) {
+          camera.try_move(-.1, std::span<const lefticus::geometry::Segment<double>>(map_wall_segments));
+        } else if (current_event == ftxui::Event::ArrowLeft) {
+          camera.rotate(-.1);
+        } else if (current_event == ftxui::Event::ArrowRight) {
+          camera.rotate(.1);
+        }
+      }();
     }
 
-    for (std::size_t row = 0; row < bm->height(); ++row) {
-      for (std::size_t col = 0; col < max_col; ++col) { ++(bm->at(col, row).G); }
-    }
-
-    // for the fun of it, let's have a second window doing interesting things
-    auto &small_bm_pixel =
-      small_bm->data().at(static_cast<std::size_t>(elapsed_time.count()) % small_bm->data().size());
-
-    switch (elapsed_time.count() % 3) {
-    case 0:
-      small_bm_pixel.R += 11;// NOLINT Magic Number
-      break;
-    case 1:
-      small_bm_pixel.G += 11;// NOLINT Magic Number
-      break;
-    case 2:
-      small_bm_pixel.B += 11;// NOLINT Magic Number
-      break;
-    }
-
-
-    ++max_row;
-    if (max_row >= bm->height()) { max_row = 0; }
-    ++max_col;
-    if (max_col >= bm->width()) { max_col = 0; }
+    render(*bm, bm->width(), bm->height(), std::span<const lefticus::geometry::Segment<double>>(map_wall_segments), camera);
   };
 
   auto screen = ftxui::ScreenInteractive::TerminalOutput();
@@ -288,8 +208,14 @@ void game_iteration_canvas()
         small_bm | ftxui::border }) });
   };
 
-  auto renderer = ftxui::Renderer(make_layout);
+  auto container = ftxui::Container::Vertical({});
 
+  auto key_press = ::CatchEvent(container, [&](const ftxui::Event &event) {
+    events.push_back(event);
+    return false;
+  });
+
+  auto renderer = ftxui::Renderer(key_press, make_layout);
 
   std::atomic<bool> refresh_ui_continue = true;
 
@@ -313,22 +239,13 @@ void game_iteration_canvas()
 int main(int argc, const char **argv)
 {
   try {
-    CLI::App app{ fmt::format("{} version {}", libraycaster::cmake::project_name, libraycaster::cmake::project_version) };
+    CLI::App app{ fmt::format(
+      "{} version {}", libraycaster::cmake::project_name, libraycaster::cmake::project_version) };
 
     std::optional<std::string> message;
     app.add_option("-m,--message", message, "A message to print back out");
     bool show_version = false;
     app.add_flag("--version", show_version, "Show version information");
-
-    bool is_turn_based = false;
-    auto *turn_based = app.add_flag("--turn_based", is_turn_based);
-
-    bool is_loop_based = false;
-    auto *loop_based = app.add_flag("--loop_based", is_loop_based);
-
-    turn_based->excludes(loop_based);
-    loop_based->excludes(turn_based);
-
 
     CLI11_PARSE(app, argc, argv);
 
@@ -337,11 +254,7 @@ int main(int argc, const char **argv)
       return EXIT_SUCCESS;
     }
 
-    if (is_turn_based) {
-      consequence_game();
-    } else {
-      game_iteration_canvas();
-    }
+    game_iteration_canvas();
 
   } catch (const std::exception &e) {
     spdlog::error("Unhandled exception in main: {}", e.what());
