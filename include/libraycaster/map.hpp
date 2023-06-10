@@ -107,63 +107,6 @@ template<std::floating_point FP> [[nodiscard]] constexpr std::vector<Segment<FP>
 
   std::cout << "Filtered duplicated wall segments: " << result.size() << '\n';
 
-  /*
-    cont = True
-    while cont:
-        remove_list = []
-        for s in result:
-            for n in result:
-                if s.end.x == n.start.x and s.end.y == n.start.y and n.parallel(s):
-                    remove_list += [n, s]
-                    result.append(
-                        Segment<FP>{
-            Point<FP>
-            {s.start.x, s.start.y), Point<FP>
-              {n.end.x, n.end.y))
-                    )
-                    break
-                elif (
-                    s is not n
-                    and s.end.x == n.end.x
-                    and s.end.y == n.end.y
-                    and s.parallel(n)
-                ):
-                    remove_list += [n, s]
-                    result.append(
-                        Segment<FP>{
-                  Point<FP>
-                  {s.start.x, s.start.y), Point<FP>
-                    {n.start.x, n.start.y)
-                        )
-                    )
-                    break
-                elif (
-                    s is not n
-                    and s.start.x == n.start.x
-                    and s.start.y == n.start.y
-                    and s.parallel(n)
-                ):
-                    remove_list += [n, s]
-                    result.append(
-                        Segment<FP>{
-                        Point<FP>
-                        {s.end.x, s.end.y), Point<FP>
-                          {n.end.x, n.end.y))
-                    )
-                    break
-
-            if len(remove_list) > 0:
-                break
-
-        if len(remove_list) == 0:
-            cont = False
-
-        for i in remove_list:
-            result.remove(i)
-
-    print(f"Merged segments: {len(result)}")
-*/
-
   return result;
 }
 
