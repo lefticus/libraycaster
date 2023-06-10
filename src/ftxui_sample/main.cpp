@@ -124,8 +124,8 @@ void game_iteration_canvas()
 {
   // this should probably have a `bitmap` helper function that does what cur_you expect
   // similar to the other parts of FTXUI
-  auto bm = std::make_shared<Bitmap>(104, 70);// NOLINT magic numbers
-  auto small_bm = std::make_shared<Bitmap>(6, 6);// NOLINT magic numbers
+  auto bm = std::make_shared<Bitmap>(80, 60);// NOLINT magic numbers
+  auto small_bm = std::make_shared<Bitmap>(32, 32);// NOLINT magic numbers
 
   double fps = 0;
 
@@ -146,12 +146,8 @@ void game_iteration_canvas()
 
   const auto map_wall_segments = lefticus::geometry::make_map<double>(game_map);
 
-  const auto FOV =
-    2 * std::atan(static_cast<double>(bm->width()) / 200.0) * std::tan((std::numbers::pi_v<double> / 2) / 2);
-
-  auto camera = lefticus::geometry::Camera<double>{
-    lefticus::geometry::Point<double>{ -0.5, -0.5 }, std::numbers::pi_v<double> / 2, FOV
-  };
+  auto camera = lefticus::geometry::Camera<double>{ lefticus::geometry::Point<double>{ -0.5, -0.5 },
+    std::numbers::pi_v<double> / 2 };
 
   std::vector<ftxui::Event> events;
 
@@ -183,7 +179,8 @@ void game_iteration_canvas()
       }();
     }
 
-    render(*bm, bm->width(), bm->height(), std::span<const lefticus::geometry::Segment<double>>(map_wall_segments), camera);
+    render(
+      *bm, bm->width(), bm->height(), std::span<const lefticus::geometry::Segment<double>>(map_wall_segments), camera);
   };
 
   auto screen = ftxui::ScreenInteractive::TerminalOutput();
