@@ -1,6 +1,8 @@
 #include "camera.hpp"
 #include "geometry.hpp"
 
+#include <ranges>
+
 namespace lefticus::geometry {
 
 template<std::floating_point FP> [[nodiscard]] constexpr std::vector<Segment<FP>> box(Point<FP> ul)
@@ -90,7 +92,7 @@ template<std::floating_point FP> [[nodiscard]] constexpr std::vector<Segment<FP>
     --y;
   }
 
-  std::cout << "Segments: " << result.size() << '\n';
+  // std::cout << "Segments: " << result.size() << '\n';
   //  return result;
 
   // if any segment exists twice, then it was between two map items
@@ -105,7 +107,7 @@ template<std::floating_point FP> [[nodiscard]] constexpr std::vector<Segment<FP>
     return filtered;
   }();
 
-  std::cout << "Filtered duplicated wall segments: " << result.size() << '\n';
+  // std::cout << "Filtered duplicated wall segments: " << result.size() << '\n';
 
   return result;
 }
