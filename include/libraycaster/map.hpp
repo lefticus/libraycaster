@@ -1,7 +1,7 @@
 #include "camera.hpp"
 #include "geometry.hpp"
 
-#include <ranges>
+#include <algorithm>
 
 namespace lefticus::geometry {
 
