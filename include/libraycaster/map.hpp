@@ -3,7 +3,7 @@
 
 #include <algorithm>
 
-namespace lefticus::geometry {
+namespace lefticus::raycaster {
 
 template<std::floating_point FP> [[nodiscard]] constexpr std::vector<Segment<FP>> box(Point<FP> ul)
 {
@@ -161,4 +161,4 @@ template<std::floating_point FP> struct Map2D
               pygame.draw.line(surface, (255, 255, 255), start, end)
   */
 };
-}// namespace lefticus::geometry
+}// namespace lefticus::raycaster

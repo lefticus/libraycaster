@@ -40,8 +40,8 @@ template<std::floating_point FP> struct Approx
 
 TEMPLATE_TEST_CASE("Test Adding Points", "[geometry]", float, double, long double)
 {
-  const auto point1 = lefticus::geometry::Point<TestType>{ 1, 2 };
-  const auto point2 = lefticus::geometry::Point<TestType>{ 3, 4 };
+  const auto point1 = lefticus::raycaster::Point<TestType>{ 1, 2 };
+  const auto point2 = lefticus::raycaster::Point<TestType>{ 3, 4 };
   const auto result = point1 + point2;
 
   CHECK(result.x == 4);
@@ -59,53 +59,53 @@ TEMPLATE_TEST_CASE("Test Segment Properties", "[geometry]", float, double, long 
     CHECK(segment.to_ray() == ray);
   };
 
-  const auto zero_slope = lefticus::geometry::Segment<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 },
-    lefticus::geometry::Point<TestType>{ 1, 0 } };
+  const auto zero_slope = lefticus::raycaster::Segment<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 },
+    lefticus::raycaster::Point<TestType>{ 1, 0 } };
   expected_values(zero_slope,
     static_cast<TestType>(0),
     static_cast<TestType>(0),
     static_cast<TestType>(1),
     static_cast<TestType>(0),
-    lefticus::geometry::Ray<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 }, std::numbers::pi_v<TestType> / 2 });
+    lefticus::raycaster::Ray<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 }, std::numbers::pi_v<TestType> / 2 });
 
-  const auto one_slope = lefticus::geometry::Segment<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 },
-    lefticus::geometry::Point<TestType>{ 1, 1 } };
+  const auto one_slope = lefticus::raycaster::Segment<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 },
+    lefticus::raycaster::Point<TestType>{ 1, 1 } };
   expected_values(one_slope,
     static_cast<TestType>(0),
     static_cast<TestType>(0),
     static_cast<TestType>(1),
     static_cast<TestType>(1),
-    lefticus::geometry::Ray<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 }, std::numbers::pi_v<TestType> / 4 });
+    lefticus::raycaster::Ray<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 }, std::numbers::pi_v<TestType> / 4 });
 
-  const auto negative_one_slope = lefticus::geometry::Segment<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 },
-    lefticus::geometry::Point<TestType>{ 1, -1 } };
+  const auto negative_one_slope = lefticus::raycaster::Segment<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 },
+    lefticus::raycaster::Point<TestType>{ 1, -1 } };
 
   expected_values(negative_one_slope,
     static_cast<TestType>(0),
     static_cast<TestType>(-1),
     static_cast<TestType>(1),
     static_cast<TestType>(0),
-    lefticus::geometry::Ray<TestType>{
-      lefticus::geometry::Point<TestType>{ 0, 0 }, 3 * std::numbers::pi_v<TestType> / 4 });
+    lefticus::raycaster::Ray<TestType>{
+      lefticus::raycaster::Point<TestType>{ 0, 0 }, 3 * std::numbers::pi_v<TestType> / 4 });
 
-  const auto vertical_slope = lefticus::geometry::Segment<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 },
-    lefticus::geometry::Point<TestType>{ 0, 1 } };
+  const auto vertical_slope = lefticus::raycaster::Segment<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 },
+    lefticus::raycaster::Point<TestType>{ 0, 1 } };
 
   expected_values(vertical_slope,
     static_cast<TestType>(0),
     static_cast<TestType>(0),
     static_cast<TestType>(0),
     static_cast<TestType>(1),
-    lefticus::geometry::Ray<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 }, 0 });
+    lefticus::raycaster::Ray<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 }, 0 });
 }
 
 
 TEMPLATE_TEST_CASE("Test Segment Segment", "[geometry]", float, double, long double)
 {
-  const auto point_segment = lefticus::geometry::Segment<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 },
-    lefticus::geometry::Point<TestType>{ 0, 0 } };
-  const auto line_segment = lefticus::geometry::Segment<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 },
-    lefticus::geometry::Point<TestType>{ 1, 2 } };
+  const auto point_segment = lefticus::raycaster::Segment<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 },
+    lefticus::raycaster::Point<TestType>{ 0, 0 } };
+  const auto line_segment = lefticus::raycaster::Segment<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 },
+    lefticus::raycaster::Point<TestType>{ 1, 2 } };
 
   CHECK_NOTHROW(line_segment.to_ray());
   CHECK_THROWS(point_segment.to_ray());
@@ -121,36 +121,36 @@ TEMPLATE_TEST_CASE("Test Ray Properties", "[geometry]", float, double, long doub
     CHECK(actual_segment.end.y == Approx<TestType>(segment.end.y));
   };
 
-  const auto zero_angle = lefticus::geometry::Ray<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 }, 0 };
+  const auto zero_angle = lefticus::raycaster::Ray<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 }, 0 };
   expected_values(zero_angle,
-    lefticus::geometry::Segment<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 },
-      lefticus::geometry::Point<TestType>{ 0, lefticus::geometry::DISTANT_POINT_v<TestType> } });
+    lefticus::raycaster::Segment<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 },
+      lefticus::raycaster::Point<TestType>{ 0, lefticus::raycaster::DISTANT_POINT_v<TestType> } });
 
   const auto forty_five_angle =
-    lefticus::geometry::Ray<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 }, std::numbers::pi_v<TestType> / 4 };
+    lefticus::raycaster::Ray<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 }, std::numbers::pi_v<TestType> / 4 };
   expected_values(forty_five_angle,
-    lefticus::geometry::Segment<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 },
-      lefticus::geometry::Point<TestType>{
-        std::sin(std::numbers::pi_v<TestType> / 4) * lefticus::geometry::DISTANT_POINT_v<TestType>,
-        std::cos(std::numbers::pi_v<TestType> / 4) * lefticus::geometry::DISTANT_POINT_v<TestType> } });
+    lefticus::raycaster::Segment<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 },
+      lefticus::raycaster::Point<TestType>{
+        std::sin(std::numbers::pi_v<TestType> / 4) * lefticus::raycaster::DISTANT_POINT_v<TestType>,
+        std::cos(std::numbers::pi_v<TestType> / 4) * lefticus::raycaster::DISTANT_POINT_v<TestType> } });
 
   const auto right_angle =
-    lefticus::geometry::Ray<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 }, std::numbers::pi_v<TestType> / 2 };
+    lefticus::raycaster::Ray<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 }, std::numbers::pi_v<TestType> / 2 };
   expected_values(right_angle,
-    lefticus::geometry::Segment<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 },
-      lefticus::geometry::Point<TestType>{ lefticus::geometry::DISTANT_POINT_v<TestType>, 0 } });
+    lefticus::raycaster::Segment<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 },
+      lefticus::raycaster::Point<TestType>{ lefticus::raycaster::DISTANT_POINT_v<TestType>, 0 } });
 
   const auto one_eighty_angle =
-    lefticus::geometry::Ray<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 }, std::numbers::pi_v<TestType> };
+    lefticus::raycaster::Ray<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 }, std::numbers::pi_v<TestType> };
   expected_values(one_eighty_angle,
-    lefticus::geometry::Segment<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 },
-      lefticus::geometry::Point<TestType>{ 0, -lefticus::geometry::DISTANT_POINT_v<TestType> } });
+    lefticus::raycaster::Segment<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 },
+      lefticus::raycaster::Point<TestType>{ 0, -lefticus::raycaster::DISTANT_POINT_v<TestType> } });
 
-  const auto two_seventy_angle = lefticus::geometry::Ray<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 },
+  const auto two_seventy_angle = lefticus::raycaster::Ray<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 },
     TestType{ 3 } / TestType{ 2 } * std::numbers::pi_v<TestType> };
   expected_values(two_seventy_angle,
-    lefticus::geometry::Segment<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 },
-      lefticus::geometry::Point<TestType>{ -lefticus::geometry::DISTANT_POINT_v<TestType>, 0 } });
+    lefticus::raycaster::Segment<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 },
+      lefticus::raycaster::Point<TestType>{ -lefticus::raycaster::DISTANT_POINT_v<TestType>, 0 } });
 }
 
 TEMPLATE_TEST_CASE("Test Ray Segment Round Trip", "[geometry]", float, double, long double)
@@ -163,16 +163,16 @@ TEMPLATE_TEST_CASE("Test Ray Segment Round Trip", "[geometry]", float, double, l
     CHECK(ray.start == new_ray.start);
   };
 
-  const auto angle_0 = lefticus::geometry::Ray<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 }, 0 };
+  const auto angle_0 = lefticus::raycaster::Ray<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 }, 0 };
   const auto angle_45 =
-    lefticus::geometry::Ray<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 }, std::numbers::pi_v<TestType> / 4 };
+    lefticus::raycaster::Ray<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 }, std::numbers::pi_v<TestType> / 4 };
   const auto angle_90 =
-    lefticus::geometry::Ray<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 }, std::numbers::pi_v<TestType> / 2 };
+    lefticus::raycaster::Ray<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 }, std::numbers::pi_v<TestType> / 2 };
   const auto angle_180 =
-    lefticus::geometry::Ray<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 }, std::numbers::pi_v<TestType> };
-  const auto angle_270 = lefticus::geometry::Ray<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 },
+    lefticus::raycaster::Ray<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 }, std::numbers::pi_v<TestType> };
+  const auto angle_270 = lefticus::raycaster::Ray<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 },
     TestType{ 3 } / TestType{ 2 } * std::numbers::pi_v<TestType> };
-  const auto angle_405 = lefticus::geometry::Ray<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 },
+  const auto angle_405 = lefticus::raycaster::Ray<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 },
     2 * std::numbers::pi_v<TestType> + std::numbers::pi_v<TestType> / 4 };
 
   SECTION("0 degrees") { round_trip(angle_0); }
@@ -186,21 +186,21 @@ TEMPLATE_TEST_CASE("Test Ray Segment Round Trip", "[geometry]", float, double, l
 
 TEMPLATE_TEST_CASE("Test Segment Intersections", "[geometry]", float, double, long double)
 {
-  std::array<lefticus::geometry::Segment<TestType>, 1> horizontal{ lefticus::geometry::Segment<TestType>{
-    lefticus::geometry::Point<TestType>{ -1, 0 }, lefticus::geometry::Point<TestType>{ 1, 0 } } };
-  std::array<lefticus::geometry::Segment<TestType>, 1> vertical{ lefticus::geometry::Segment<TestType>{
-    lefticus::geometry::Point<TestType>{ 0, -1 }, lefticus::geometry::Point<TestType>{ 0, 1 } } };
+  std::array<lefticus::raycaster::Segment<TestType>, 1> horizontal{ lefticus::raycaster::Segment<TestType>{
+    lefticus::raycaster::Point<TestType>{ -1, 0 }, lefticus::raycaster::Point<TestType>{ 1, 0 } } };
+  std::array<lefticus::raycaster::Segment<TestType>, 1> vertical{ lefticus::raycaster::Segment<TestType>{
+    lefticus::raycaster::Point<TestType>{ 0, -1 }, lefticus::raycaster::Point<TestType>{ 0, 1 } } };
 
-  const auto intersections = lefticus::geometry::intersecting_segments(
-    horizontal[0], std::span<const lefticus::geometry::Segment<TestType>>{ vertical });
+  const auto intersections = lefticus::raycaster::intersecting_segments(
+    horizontal[0], std::span<const lefticus::raycaster::Segment<TestType>>{ vertical });
 
   REQUIRE(intersections.size() == 1);
   CHECK(intersections[0].segment == vertical[0]);
   CHECK(intersections[0].intersection.x == 0);
   CHECK(intersections[0].intersection.y == 0);
 
-  const auto intersections_h = lefticus::geometry::intersecting_segments(
-    vertical[0], std::span<const lefticus::geometry::Segment<TestType>>{ horizontal });
+  const auto intersections_h = lefticus::raycaster::intersecting_segments(
+    vertical[0], std::span<const lefticus::raycaster::Segment<TestType>>{ horizontal });
 
   REQUIRE(intersections_h.size() == 1);
   CHECK(intersections_h[0].segment == horizontal[0]);
@@ -213,14 +213,14 @@ TEMPLATE_TEST_CASE("Test Intersect Ray To Perpendicular", "[geometry]", float, d
   {
     // vertical ray (x = 10)
     const auto ray =
-      lefticus::geometry::Ray<TestType>{ lefticus::geometry::Point<TestType>{ 10, 5 }, std::numbers::pi_v<TestType> };
+      lefticus::raycaster::Ray<TestType>{ lefticus::raycaster::Point<TestType>{ 10, 5 }, std::numbers::pi_v<TestType> };
     // horizontal segment (y = 0, x=[0, 20])
-    const std::array<lefticus::geometry::Segment<TestType>, 1> segment{ lefticus::geometry::Segment<TestType>{
-      lefticus::geometry::Point<TestType>{ 0, 0 }, lefticus::geometry::Point<TestType>{ 20, 0 } } };
+    const std::array<lefticus::raycaster::Segment<TestType>, 1> segment{ lefticus::raycaster::Segment<TestType>{
+      lefticus::raycaster::Point<TestType>{ 0, 0 }, lefticus::raycaster::Point<TestType>{ 20, 0 } } };
     // they should intersect at (10, 0)
 
     const auto intersections =
-      lefticus::geometry::intersect_ray(ray, std::span<const lefticus::geometry::Segment<TestType>>{ segment });
+      lefticus::raycaster::intersect_ray(ray, std::span<const lefticus::raycaster::Segment<TestType>>{ segment });
     REQUIRE(intersections.size() == 1);
     CHECK(intersections[0].intersection.x == 10);
     CHECK(intersections[0].intersection.y == 0);
@@ -228,14 +228,14 @@ TEMPLATE_TEST_CASE("Test Intersect Ray To Perpendicular", "[geometry]", float, d
 
   {
     // horizontal ray (y = 0)
-    const auto ray = lefticus::geometry::Ray<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 },
+    const auto ray = lefticus::raycaster::Ray<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 },
       std::numbers::pi_v<TestType> / 2 };
     // vertical segment (x = 4, y=[-10, 10])
-    const std::array<lefticus::geometry::Segment<TestType>, 1> segment{ lefticus::geometry::Segment<TestType>{
-      lefticus::geometry::Point<TestType>{ 4, -10 }, lefticus::geometry::Point<TestType>{ 4, 10 } } };
+    const std::array<lefticus::raycaster::Segment<TestType>, 1> segment{ lefticus::raycaster::Segment<TestType>{
+      lefticus::raycaster::Point<TestType>{ 4, -10 }, lefticus::raycaster::Point<TestType>{ 4, 10 } } };
     // they should intersect at (4, 0)
     const auto intersections =
-      lefticus::geometry::intersect_ray(ray, std::span<const lefticus::geometry::Segment<TestType>>{ segment });
+      lefticus::raycaster::intersect_ray(ray, std::span<const lefticus::raycaster::Segment<TestType>>{ segment });
     REQUIRE(intersections.size() == 1);
     CHECK(intersections[0].intersection.x == Approx<TestType>(4));
     CHECK(intersections[0].intersection.y == Approx<TestType>(0));// NOLINT MAGIC NUMBER
@@ -246,11 +246,11 @@ TEMPLATE_TEST_CASE("Test Intersect Ray To Perpendicular", "[geometry]", float, d
 TEMPLATE_TEST_CASE("Test Intersect Ray To Diagonal", "[geometry]", float, double, long double)
 {
   const auto ray =
-    lefticus::geometry::Ray<TestType>{ lefticus::geometry::Point<TestType>{ 10, 5 }, std::numbers::pi_v<TestType> };
-  const std::array<lefticus::geometry::Segment<TestType>, 1> segment{ lefticus::geometry::Segment<TestType>{
-    lefticus::geometry::Point<TestType>{ 0, 0 }, lefticus::geometry::Point<TestType>{ 20, -20 } } };
+    lefticus::raycaster::Ray<TestType>{ lefticus::raycaster::Point<TestType>{ 10, 5 }, std::numbers::pi_v<TestType> };
+  const std::array<lefticus::raycaster::Segment<TestType>, 1> segment{ lefticus::raycaster::Segment<TestType>{
+    lefticus::raycaster::Point<TestType>{ 0, 0 }, lefticus::raycaster::Point<TestType>{ 20, -20 } } };
   const auto intersections =
-    lefticus::geometry::intersect_ray(ray, std::span<const lefticus::geometry::Segment<TestType>>{ segment });
+    lefticus::raycaster::intersect_ray(ray, std::span<const lefticus::raycaster::Segment<TestType>>{ segment });
   CHECK(intersections.size() == 1);
 }
 
@@ -258,17 +258,17 @@ TEMPLATE_TEST_CASE("Test Intersect Ray To Diagonal", "[geometry]", float, double
 TEMPLATE_TEST_CASE("Test Camera Ray To Diagonal", "[geometry]", float, double, long double)
 {
   const auto camera = Camera<TestType>{
-    lefticus::geometry::Point<TestType>{ 10, 5 }, std::numbers::pi_v<TestType>, std::numbers::pi_v<TestType> / 4
+    lefticus::raycaster::Point<TestType>{ 10, 5 }, std::numbers::pi_v<TestType>, std::numbers::pi_v<TestType> / 4
   };
 
-  const std::array segments{ lefticus::geometry::Segment<TestType>{ lefticus::geometry::Point<TestType>{ 0, 0 },
-                               lefticus::geometry::Point<TestType>{ 20, 0 } },
-    lefticus::geometry::Segment<TestType>{
-      lefticus::geometry::Point<TestType>{ 0, 0 }, lefticus::geometry::Point<TestType>{ 40, -40 } } };
+  const std::array segments{ lefticus::raycaster::Segment<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 },
+                               lefticus::raycaster::Point<TestType>{ 20, 0 } },
+    lefticus::raycaster::Segment<TestType>{
+      lefticus::raycaster::Point<TestType>{ 0, 0 }, lefticus::raycaster::Point<TestType>{ 40, -40 } } };
 
   for (const auto &[ray, point] : camera.rays(10)) {
     const auto intersections =
-      lefticus::geometry::intersect_ray(ray, std::span<const lefticus::geometry::Segment<TestType>>(segments));
+      lefticus::raycaster::intersect_ray(ray, std::span<const lefticus::raycaster::Segment<TestType>>(segments));
     CHECK(intersections.size() == 2);
   }
 }

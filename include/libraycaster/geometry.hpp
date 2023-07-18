@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace lefticus::geometry {
+namespace lefticus::raycaster {
 template<std::floating_point FP> inline constexpr auto DISTANT_POINT_v = static_cast<FP>(1000);
 
 // Floating point math is hard, and trying to find a point on a line
@@ -191,7 +191,7 @@ template<std::floating_point FP>
 
   return result;
 }
-}// namespace lefticus::geometry
+}// namespace lefticus::raycaster
 
 
 #endif

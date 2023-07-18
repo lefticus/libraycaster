@@ -3,7 +3,7 @@
 #include <ranges>
 #include <span>
 
-namespace lefticus::geometry {
+namespace lefticus::raycaster {
 template<typename FP>
 void render(auto &display,
   std::size_t width,
@@ -97,4 +97,4 @@ if minimap_on:
   )
 */
 }
-}// namespace lefticus::geometry
+}// namespace lefticus::raycaster

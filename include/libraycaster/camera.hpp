@@ -4,18 +4,18 @@
 #include "geometry.hpp"
 #include <ranges>
 
-namespace lefticus::geometry {
+namespace lefticus::raycaster {
 template<std::floating_point FP> struct Camera
 {
-  lefticus::geometry::Point<FP> location{};
+  lefticus::raycaster::Point<FP> location{};
   FP direction = 0;// angle from y-axis, "compass" style
 
-  void try_move(FP distance, std::span<const lefticus::geometry::Segment<FP>> walls)
+  void try_move(FP distance, std::span<const lefticus::raycaster::Segment<FP>> walls)
   {
     const auto new_location =
-      location + lefticus::geometry::Point<FP>{ distance * std::sin(direction), distance * std::cos(direction) };
+      location + lefticus::raycaster::Point<FP>{ distance * std::sin(direction), distance * std::cos(direction) };
 
-    const auto proposed_move = lefticus::geometry::Segment<FP>{ location, new_location };
+    const auto proposed_move = lefticus::raycaster::Segment<FP>{ location, new_location };
 
     if (intersecting_segments(proposed_move, walls).empty()) {
       // we don't intersect any wall, so we allow the move
@@ -35,23 +35,23 @@ template<std::floating_point FP> struct Camera
     // (not curved) distribution of rays, but we still need
     // to do a height correction later to flatten it out
     const auto viewing_plane_start =
-      location + lefticus::geometry::Point<FP>{ std::sin(start_angle(fov)), std::cos(start_angle(fov)) };
+      location + lefticus::raycaster::Point<FP>{ std::sin(start_angle(fov)), std::cos(start_angle(fov)) };
     const auto viewing_plane_end =
-      location + lefticus::geometry::Point<FP>{ std::sin(end_angle(fov)), std::cos(end_angle(fov)) };
+      location + lefticus::raycaster::Point<FP>{ std::sin(end_angle(fov)), std::cos(end_angle(fov)) };
 
     const auto d_x = (viewing_plane_end.x - viewing_plane_start.x) / static_cast<FP>(count);
     const auto d_y = (viewing_plane_end.y - viewing_plane_start.y) / static_cast<FP>(count);
 
     return std::ranges::views::iota(std::size_t{ 0 }, count)
            | std::ranges::views::transform([=, location = this->location](auto current) {
-               const auto plane_point = lefticus::geometry::Point<FP>{
+               const auto plane_point = lefticus::raycaster::Point<FP>{
                  viewing_plane_start.x + (d_x * static_cast<FP>(current)),
                  viewing_plane_start.y + (d_y * static_cast<FP>(current)),
                };
-               const auto ray_segment = lefticus::geometry::Segment<FP>{ location, plane_point };
+               const auto ray_segment = lefticus::raycaster::Segment<FP>{ location, plane_point };
                return std::pair{ ray_segment.to_ray(), plane_point };
              });
   }
 };
-}// namespace lefticus::geometry
+}// namespace lefticus::raycaster
 #endif

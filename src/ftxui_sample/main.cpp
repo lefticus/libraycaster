@@ -144,9 +144,9 @@ void game_iteration_canvas()
     ####################
     )";
 
-  const auto map_wall_segments = lefticus::geometry::make_map<double>(game_map);
+  const auto map_wall_segments = lefticus::raycaster::make_map<double>(game_map);
 
-  auto camera = lefticus::geometry::Camera<double>{ lefticus::geometry::Point<double>{ -0.5, -0.5 },
+  auto camera = lefticus::raycaster::Camera<double>{ lefticus::raycaster::Point<double>{ -0.5, -0.5 },
     std::numbers::pi_v<double> / 2 };
 
   std::vector<ftxui::Event> events;
@@ -168,9 +168,9 @@ void game_iteration_canvas()
 
       [&] {
         if (current_event == ftxui::Event::ArrowUp) {
-          camera.try_move(.1, std::span<const lefticus::geometry::Segment<double>>(map_wall_segments));
+          camera.try_move(.1, std::span<const lefticus::raycaster::Segment<double>>(map_wall_segments));
         } else if (current_event == ftxui::Event::ArrowDown) {
-          camera.try_move(-.1, std::span<const lefticus::geometry::Segment<double>>(map_wall_segments));
+          camera.try_move(-.1, std::span<const lefticus::raycaster::Segment<double>>(map_wall_segments));
         } else if (current_event == ftxui::Event::ArrowLeft) {
           camera.rotate(-.1);
         } else if (current_event == ftxui::Event::ArrowRight) {
@@ -180,7 +180,7 @@ void game_iteration_canvas()
     }
 
     render(
-      *bm, bm->width(), bm->height(), std::span<const lefticus::geometry::Segment<double>>(map_wall_segments), camera);
+      *bm, bm->width(), bm->height(), std::span<const lefticus::raycaster::Segment<double>>(map_wall_segments), camera);
   };
 
   auto screen = ftxui::ScreenInteractive::TerminalOutput();
