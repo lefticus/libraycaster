@@ -38,6 +38,23 @@ template<std::floating_point FP> struct Point
   [[nodiscard]] constexpr auto operator<=>(const Point &) const noexcept = default;
 };
 
+template<std::floating_point FP> struct Rectangle
+{
+  Point<FP> upper_left;
+  Point<FP> lower_right;
+
+  [[nodiscard]] constexpr bool intersects(const Point<FP> &point) const noexcept
+  {
+    return point.x > upper_left.x && point.y > upper_left.y && point.x < lower_right.x && point.y < lower_right.y;
+  }
+
+  [[nodiscard]] constexpr Point<FP> center() const noexcept
+  {
+    const auto summed_point = upper_left + lower_right;
+    return Point<FP>{ summed_point.x / 2, summed_point.y / 2 };
+  }
+};
+
 template<std::floating_point FP> struct Segment
 {
   Point<FP> start;

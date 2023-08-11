@@ -5,6 +5,27 @@
 
 namespace lefticus::raycaster {
 
+template<std::floating_point FP> struct Named_Location
+{
+  Rectangle<FP> location;
+  char name;
+};
+
+template<std::floating_point FP> struct Map
+{
+  std::vector<Segment<FP>> segments;
+  std::vector<Named_Location<FP>> named_locations;
+
+  [[nodiscard]] constexpr std::optional<Rectangle<FP>> get_named_location(const char name) const noexcept {
+    for (const auto &location : named_locations) {
+      if (location.name == name) {
+        return location.location;
+      }
+    }
+    return {};
+  }
+};
+
 template<std::floating_point FP> [[nodiscard]] constexpr std::vector<Segment<FP>> box(Point<FP> ul)
 {
   return {
@@ -53,9 +74,9 @@ template<std::floating_point FP> [[nodiscard]] constexpr std::vector<Segment<FP>
   };
 }
 
-template<std::floating_point FP> [[nodiscard]] constexpr std::vector<Segment<FP>> make_map(std::string_view map_string)
+template<std::floating_point FP> [[nodiscard]] constexpr Map<FP> make_map(std::string_view map_string)
 {
-  std::vector<Segment<FP>> result;
+  Map<FP> result;
 
   std::vector<std::string_view> lines;
 
@@ -69,23 +90,29 @@ template<std::floating_point FP> [[nodiscard]] constexpr std::vector<Segment<FP>
   for (const auto &line : lines) {
     std::size_t x = 0;
     for (const char ch : line) {
+      const auto fp_x = static_cast<FP>(x);
+      const auto fp_y = static_cast<FP>(y);
+
       switch (ch) {
       case '#':
       case '*':
-        append(result, box(Point<FP>{ static_cast<FP>(x), static_cast<FP>(y) }));
+        append(result.segments, box(Point<FP>{ fp_x, fp_y }));
         break;
       case '/':
-        append(result, ul_triangle(Point<FP>{ static_cast<FP>(x), static_cast<FP>(y) }));
+        append(result.segments, ul_triangle(Point<FP>{ fp_x, fp_y }));
         break;
       case '&':
-        append(result, ur_triangle(Point<FP>{ static_cast<FP>(x), static_cast<FP>(y) }));
+        append(result.segments, ur_triangle(Point<FP>{ fp_x, fp_y }));
         break;
       case '%':
-        append(result, lr_triangle(Point<FP>{ static_cast<FP>(x), static_cast<FP>(y) }));
+        append(result.segments, lr_triangle(Point<FP>{ fp_x, fp_y }));
         break;
       case '`':
-        append(result, ll_triangle(Point<FP>{ static_cast<FP>(x), static_cast<FP>(y) }));
+        append(result.segments, ll_triangle(Point<FP>{ fp_x, fp_y }));
         break;
+      default:
+        result.named_locations.push_back(
+          Named_Location<FP>{ Rectangle<FP>{ Point<FP>(fp_x, fp_y-1), Point<FP>(fp_x + 1, fp_y) }, ch });
       }
       ++x;
     }
@@ -99,10 +126,10 @@ template<std::floating_point FP> [[nodiscard]] constexpr std::vector<Segment<FP>
   // and both can be removed !
 
   // Python: result = [item for item in result if result.count(item) == 1]
-  result = [&]() {
+  result.segments = [&]() {
     std::vector<Segment<FP>> filtered;
-    for (const auto &line : result) {
-      if (std::ranges::count(result, line) == 1) { filtered.push_back(line); }
+    for (const auto &line : result.segments) {
+      if (std::ranges::count(result.segments, line) == 1) { filtered.push_back(line); }
     }
     return filtered;
   }();
