@@ -145,12 +145,18 @@ void game_iteration_canvas()
     )";
 
   const auto map = lefticus::raycaster::make_map<double>(game_map);
+
+  // get starting location (need to specify direction too at some point?
   const auto starting_point = map.get_named_location('s')->center();
 
   auto camera = lefticus::raycaster::Camera<double>{ starting_point, std::numbers::pi_v<double> / 2 };
-//  auto camera = lefticus::raycaster::Camera<double>{ lefticus::raycaster::Point<double>{.5, .5}, std::numbers::pi_v<double> / 2 };
+  //  auto camera = lefticus::raycaster::Camera<double>{ lefticus::raycaster::Point<double>{.5, .5},
+  //  std::numbers::pi_v<double> / 2 };
 
   std::vector<ftxui::Event> events;
+
+  char intersection = ' ';
+
 
 
   // to do, add total game time clock also, not just current elapsed time
@@ -167,21 +173,25 @@ void game_iteration_canvas()
       const auto current_event = events.front();
       events.erase(events.begin());
 
-      [&] {
-        if (current_event == ftxui::Event::ArrowUp) {
-          camera.try_move(.1, std::span<const lefticus::raycaster::Segment<double>>(map.segments));
-        } else if (current_event == ftxui::Event::ArrowDown) {
-          camera.try_move(-.1, std::span<const lefticus::raycaster::Segment<double>>(map.segments));
-        } else if (current_event == ftxui::Event::ArrowLeft) {
-          camera.rotate(-.1);
-        } else if (current_event == ftxui::Event::ArrowRight) {
-          camera.rotate(.1);
-        }
-      }();
+      if (current_event == ftxui::Event::ArrowUp) {
+        camera.try_move(.1, std::span<const lefticus::raycaster::Segment<double>>(map.segments));
+      } else if (current_event == ftxui::Event::ArrowDown) {
+        camera.try_move(-.1, std::span<const lefticus::raycaster::Segment<double>>(map.segments));
+      } else if (current_event == ftxui::Event::ArrowLeft) {
+        camera.rotate(-.1);
+      } else if (current_event == ftxui::Event::ArrowRight) {
+        camera.rotate(.1);
+      }
+
+      const auto new_intersection = map.get_first_intersection(camera.location).value_or(' ');
+
+      if (intersection != new_intersection) {
+        intersection = new_intersection;
+      }
     }
 
-    render(
-      *bm, bm->width(), bm->height(), std::span<const lefticus::raycaster::Segment<double>>(map.segments), camera);
+
+    render(*bm, bm->width(), bm->height(), std::span<const lefticus::raycaster::Segment<double>>(map.segments), camera);
   };
 
   auto screen = ftxui::ScreenInteractive::TerminalOutput();
@@ -203,6 +213,7 @@ void game_iteration_canvas()
     return ftxui::hbox({ bm | ftxui::border,
       ftxui::vbox({ ftxui::text("Frame: " + std::to_string(counter)),
         ftxui::text("FPS: " + std::to_string(fps)),
+        ftxui::text(std::string("Intersection: ") + intersection),
         small_bm | ftxui::border }) });
   };
 

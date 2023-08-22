@@ -24,6 +24,16 @@ template<std::floating_point FP> struct Map
     }
     return {};
   }
+
+  [[nodiscard]] constexpr std::optional<char> get_first_intersection(const Point<FP> point) const noexcept {
+    for (const auto &location : named_locations) {
+      if (location.location.intersects(point)) {
+        return location.name;
+      }
+    }
+
+    return {};
+  }
 };
 
 template<std::floating_point FP> [[nodiscard]] constexpr std::vector<Segment<FP>> box(Point<FP> ul)
