@@ -34,26 +34,30 @@ template<std::floating_point FP> [[nodiscard]] constexpr std::vector<Segment<FP>
 template<std::floating_point FP> constexpr void initialize_default_wall_types(Map<FP> &map)
 {
   // Box wall - white
-  map.wall_types['#'].color = {255, 255, 255};
-  map.wall_types['#'].shape_generator = box<FP>;
-  map.wall_types['*'].color = {255, 255, 255};
-  map.wall_types['*'].shape_generator = box<FP>;
+  map.wall_types[static_cast<std::size_t>('#')].color = {255, 255, 255};
+  map.wall_types[static_cast<std::size_t>('#')].shape_generator = box<FP>;
+  map.wall_types[static_cast<std::size_t>('*')].color = {255, 255, 255};
+  map.wall_types[static_cast<std::size_t>('*')].shape_generator = box<FP>;
 
   // Upper-left triangle - light red
-  map.wall_types['/'].color = {255, 200, 200};
-  map.wall_types['/'].shape_generator = ul_triangle<FP>;
+  map.wall_types[static_cast<std::size_t>('/')].color = {255, 200, 200};
+  map.wall_types[static_cast<std::size_t>('/')].shape_generator = ul_triangle<FP>;
 
   // Upper-right triangle - light green
-  map.wall_types['&'].color = {200, 255, 200};
-  map.wall_types['&'].shape_generator = ur_triangle<FP>;
+  map.wall_types[static_cast<std::size_t>('\\')].color = {200, 255, 200};
+  map.wall_types[static_cast<std::size_t>('\\')].shape_generator = ur_triangle<FP>;
+
+  // Also set for '&' for backwards compatibility
+  map.wall_types[static_cast<std::size_t>('&')].color = {200, 255, 200};
+  map.wall_types[static_cast<std::size_t>('&')].shape_generator = ur_triangle<FP>;
 
   // Lower-right triangle - light blue
-  map.wall_types['%'].color = {200, 200, 255};
-  map.wall_types['%'].shape_generator = lr_triangle<FP>;
+  map.wall_types[static_cast<std::size_t>('%')].color = {200, 200, 255};
+  map.wall_types[static_cast<std::size_t>('%')].shape_generator = lr_triangle<FP>;
 
   // Lower-left triangle - light yellow
-  map.wall_types['`'].color = {255, 255, 200};
-  map.wall_types['`'].shape_generator = ll_triangle<FP>;
+  map.wall_types[static_cast<std::size_t>('`')].color = {255, 255, 200};
+  map.wall_types[static_cast<std::size_t>('`')].shape_generator = ll_triangle<FP>;
 }
 
 template<std::floating_point FP> struct Map
@@ -163,8 +167,8 @@ template<std::floating_point FP> [[nodiscard]] constexpr Map<FP> make_map(std::s
       if (wall_type.shape_generator != nullptr) {
         auto segments = wall_type.shape_generator(Point<FP>{ fp_x, fp_y });
         append_with_color(result.segments, segments, wall_type.color);
-      } else {
-        // Otherwise treat as a named location
+      } else if (ch != ' ') {
+        // Otherwise treat as a named location, but ignore spaces
         result.named_locations.push_back(
           Named_Location<FP>{ Rectangle<FP>{ Point<FP>(fp_x, fp_y-1), Point<FP>(fp_x + 1, fp_y) }, ch });
       }

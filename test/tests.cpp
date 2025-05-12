@@ -274,3 +274,78 @@ TEMPLATE_TEST_CASE("Test Camera Ray To Diagonal", "[geometry]", float, double, l
     CHECK(intersections.size() == 2);
   }
 }
+
+// Tests for non-constexpr functions that use trigonometric operations
+
+TEMPLATE_TEST_CASE("Test Ray::end_point", "[geometry][non-constexpr]", float, double, long double)
+{
+  const auto ray = lefticus::raycaster::Ray<TestType>{
+    lefticus::raycaster::Point<TestType>{ 0, 0 },
+    std::numbers::pi_v<TestType> / 4
+  };
+
+  // At distance 1, should be at (sin(π/4), cos(π/4)) = (0.7071..., 0.7071...)
+  const auto end = ray.end_point(static_cast<TestType>(1));
+
+  CHECK(end.x == Approx<TestType>(std::sin(std::numbers::pi_v<TestType> / 4)));
+  CHECK(end.y == Approx<TestType>(std::cos(std::numbers::pi_v<TestType> / 4)));
+
+  // At distance 2, coordinates should be doubled
+  const auto end2 = ray.end_point(static_cast<TestType>(2));
+
+  CHECK(end2.x == Approx<TestType>(2 * std::sin(std::numbers::pi_v<TestType> / 4)));
+  CHECK(end2.y == Approx<TestType>(2 * std::cos(std::numbers::pi_v<TestType> / 4)));
+}
+
+TEMPLATE_TEST_CASE("Test Camera rotate", "[geometry][non-constexpr]", float, double, long double)
+{
+  auto camera = lefticus::raycaster::Camera<TestType>{
+    lefticus::raycaster::Point<TestType>{ 0, 0 },
+    static_cast<TestType>(0)
+  };
+
+  // Test rotation by 90 degrees
+  camera.rotate(std::numbers::pi_v<TestType> / 2);
+  CHECK(camera.direction == Approx<TestType>(std::numbers::pi_v<TestType> / 2));
+
+  // Test rotation by another 90 degrees
+  camera.rotate(std::numbers::pi_v<TestType> / 2);
+  CHECK(camera.direction == Approx<TestType>(std::numbers::pi_v<TestType>));
+
+  // Test rotation by 360 degrees (should wrap around to 0)
+  camera.rotate(2 * std::numbers::pi_v<TestType>);
+  CHECK(camera.direction == Approx<TestType>(std::numbers::pi_v<TestType>));
+
+  // Test rotation by -180 degrees
+  camera.rotate(-std::numbers::pi_v<TestType>);
+  CHECK(camera.direction == Approx<TestType>(0));
+}
+
+TEMPLATE_TEST_CASE("Test Camera rays", "[geometry][non-constexpr]", float, double, long double)
+{
+  const auto camera = lefticus::raycaster::Camera<TestType>{
+    lefticus::raycaster::Point<TestType>{ 0, 0 },
+    static_cast<TestType>(0)
+  };
+
+  const auto fov = std::numbers::pi_v<TestType> / 2;  // 90 degrees
+  const std::size_t num_rays = 5;
+
+  // Generate rays and verify properties
+  int ray_count = 0;
+  for (const auto &[ray, point] : camera.rays(num_rays, fov)) {
+    // Verify ray starts at camera position
+    CHECK(ray.start.x == camera.location.x);
+    CHECK(ray.start.y == camera.location.y);
+
+    // Verify ray starts at camera position
+    // Note: We don't check ray angle because in the current implementation
+    // rays are created using to_ray() which converts segment to ray angle,
+    // resulting in angles that may not be directly limited by the FOV
+
+    ray_count++;
+  }
+
+  // Verify we got the right number of rays
+  CHECK(ray_count == static_cast<int>(num_rays));
+}

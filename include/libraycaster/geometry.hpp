@@ -186,7 +186,8 @@ template<std::floating_point FP> struct Ray
     return Point<FP>{ start.x + (std::sin(angle) * distance), start.y + (std::cos(angle) * distance) };
   }
 
-  [[nodiscard]] constexpr auto to_segment(FP distance = DISTANT_POINT_v<FP>) const noexcept
+  // Not constexpr because end_point() uses non-constexpr trig functions (until C++26)
+  [[nodiscard]] auto to_segment(FP distance = DISTANT_POINT_v<FP>) const noexcept
   {
     return Segment<FP>{ start, end_point(distance) };
   }
@@ -194,7 +195,8 @@ template<std::floating_point FP> struct Ray
 
 
 template<std::floating_point FP>
-[[nodiscard]] constexpr auto intersect_ray(Ray<FP> ray, std::span<const Segment<FP>> segments)
+// Not constexpr because it calls ray.to_segment() which uses non-constexpr trig functions (until C++26)
+[[nodiscard]] auto intersect_ray(Ray<FP> ray, std::span<const Segment<FP>> segments)
 {
   return intersecting_segments(ray.to_segment(), segments);
 }
@@ -207,7 +209,9 @@ template<std::floating_point FP> struct IntersectionResult
 };
 
 template<std::floating_point FP>
-[[nodiscard]] constexpr auto intersecting_segments(Segment<FP> input_, std::span<const Segment<FP>> segments)
+// Not constexpr because it uses std::hypot which may not be constexpr until C++26,
+// and std::vector operations which might not be fully constexpr-ready
+[[nodiscard]] auto intersecting_segments(Segment<FP> input_, std::span<const Segment<FP>> segments)
 {
   std::vector<IntersectionResult<FP>> result;
 

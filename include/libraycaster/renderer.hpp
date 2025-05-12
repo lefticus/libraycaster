@@ -11,8 +11,9 @@ void render(auto &display,
   std::span<const Segment<FP>> map_wall_segments,
   Camera<FP> camera)
 {
-  const auto FOV = 2 * std::atan(static_cast<double>(width) / static_cast<double>(height * 2))
-                   * std::tan((std::numbers::pi_v<double> / 2) / 2);
+  const auto FOV = static_cast<FP>(2) *
+                  std::atan(static_cast<FP>(width) / static_cast<FP>(height * 2)) *
+                  std::tan((std::numbers::pi_v<FP> / static_cast<FP>(2)) / static_cast<FP>(2));
 
   display.clear();
 
@@ -37,7 +38,7 @@ void render(auto &display,
       color_adjustment = static_cast<std::uint8_t>(
         static_cast<FP>(128) * std::min(distance_from_eye, static_cast<FP>(5)) / static_cast<FP>(5));
 
-      auto wall_height = static_cast<std::size_t>((static_cast<FP>(height) * 0.75) / corrected_distance);
+      auto wall_height = static_cast<std::size_t>((static_cast<FP>(height) * static_cast<FP>(0.75)) / corrected_distance);
 
       if (wall_height > height) { wall_height = height; }
 
