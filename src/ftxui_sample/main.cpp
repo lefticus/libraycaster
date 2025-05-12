@@ -20,6 +20,7 @@
 
 #include <libraycaster/map.hpp>
 #include <libraycaster/renderer.hpp>
+#include <libraycaster/map2d.hpp>
 
 struct Color
 {
@@ -123,8 +124,8 @@ void game_iteration_canvas()
 {
   // this should probably have a `bitmap` helper function that does what cur_you expect
   // similar to the other parts of FTXUI
-  auto bm = std::make_shared<Bitmap>(80, 60);// NOLINT magic numbers
-  auto small_bm = std::make_shared<Bitmap>(32, 32);// NOLINT magic numbers
+  auto bm = std::make_shared<Bitmap>(60, 60);// NOLINT magic numbers
+  auto small_bm = std::make_shared<Bitmap>(60, 60);// NOLINT magic numbers
 
   double fps = 0;
 
@@ -156,6 +157,8 @@ void game_iteration_canvas()
 
   char intersection = ' ';
 
+  double minimap_zoom = 2.0; // Initial zoom level for the minimap
+
 
 
   // to do, add total game time clock also, not just current elapsed time
@@ -180,6 +183,14 @@ void game_iteration_canvas()
         camera.rotate(-.1);
       } else if (current_event == ftxui::Event::ArrowRight) {
         camera.rotate(.1);
+      } else if (current_event == ftxui::Event::Character('+') || current_event == ftxui::Event::Character('=')) {
+        // Zoom in minimap
+        minimap_zoom *= 1.2;
+        if (minimap_zoom > 5.0) minimap_zoom = 5.0; // Cap maximum zoom
+      } else if (current_event == ftxui::Event::Character('-')) {
+        // Zoom out minimap
+        minimap_zoom /= 1.2;
+        if (minimap_zoom < 0.2) minimap_zoom = 0.2; // Cap minimum zoom
       }
 
       const auto new_intersection = map.get_first_intersection(camera.location).value_or(' ');
@@ -190,7 +201,15 @@ void game_iteration_canvas()
     }
 
 
+    // Render the main 3D view
     render(*bm, bm->width(), bm->height(), std::span<const lefticus::raycaster::Segment<double>>(map.segments), camera);
+
+    // Render the minimap using map2d with current zoom factor
+    lefticus::raycaster::draw_map2d(*small_bm, small_bm->width(), small_bm->height(),
+                               std::span<const lefticus::raycaster::Segment<double>>(map.segments),
+                               camera,
+                               std::numbers::pi_v<double> / 3,
+                               minimap_zoom);
   };
 
   auto screen = ftxui::ScreenInteractive::TerminalOutput();
@@ -213,6 +232,7 @@ void game_iteration_canvas()
       ftxui::vbox({ ftxui::text("Frame: " + std::to_string(counter)),
         ftxui::text("FPS: " + std::to_string(fps)),
         ftxui::text(std::string("Intersection: ") + intersection),
+        ftxui::text("Zoom: " + std::to_string(minimap_zoom) + " (+/- to adjust)"),
         small_bm | ftxui::border }) });
   };
 

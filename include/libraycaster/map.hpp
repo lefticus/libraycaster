@@ -1,3 +1,6 @@
+#ifndef LEFTICUS_RAYCASTER_MAP_HPP
+#define LEFTICUS_RAYCASTER_MAP_HPP
+
 #include "camera.hpp"
 #include "geometry.hpp"
 
@@ -167,8 +170,8 @@ template<std::floating_point FP> struct Map2D
   {
     const auto new_p = p - center;
     const auto new_x = new_p.x * scale;
-    const auto new_y = height - new_p.y * scale;
-    return Point(new_x, new_y) + Point(width * 0.5, -height * 0.5);
+    const auto new_y = static_cast<FP>(height) - new_p.y * scale;
+    return Point<FP>(new_x, new_y) + Point<FP>(static_cast<FP>(width) * FP{0.5}, -static_cast<FP>(height) * FP{0.5});
   }
   /*
       def draw_camera(self, surface, camera: Camera) -> None:
@@ -199,3 +202,5 @@ template<std::floating_point FP> struct Map2D
   */
 };
 }// namespace lefticus::raycaster
+
+#endif // LEFTICUS_RAYCASTER_MAP_HPP
