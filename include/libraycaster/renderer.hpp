@@ -44,30 +44,46 @@ void render(auto &display,
       const auto wall_start = (height - wall_height) / 2;
       const auto wall_end = wall_start + wall_height;
 
+      // Get the wall color from the segment
+      const auto wall_color = matches[0].segment.color;
+
+      // Apply distance fog effect to wall color
+      Color adjusted_color = {
+        static_cast<std::uint8_t>(std::get<0>(wall_color) - std::min(color_adjustment, std::get<0>(wall_color))),
+        static_cast<std::uint8_t>(std::get<1>(wall_color) - std::min(color_adjustment, std::get<1>(wall_color))),
+        static_cast<std::uint8_t>(std::get<2>(wall_color) - std::min(color_adjustment, std::get<2>(wall_color)))
+      };
+
+      // Edge color - slightly lighter
+      Color edge_color = {
+        static_cast<std::uint8_t>(std::min(255, std::get<0>(wall_color) + 30) - color_adjustment),
+        static_cast<std::uint8_t>(std::min(255, std::get<1>(wall_color) + 30) - color_adjustment),
+        static_cast<std::uint8_t>(std::min(255, std::get<2>(wall_color) + 30) - color_adjustment)
+      };
+
       // Draw edge if detected
       if (col != 0 && (!last_match || last_match != matches[0].segment)) {
         if (!last_match) {
           display.draw_vertical_line(
-            { 255 - color_adjustment, 255 - color_adjustment, 255 - color_adjustment }, col, wall_start, wall_end);
+            edge_color, col, wall_start, wall_end);
         } else {
-          display.draw_vertical_line({ 255 - color_adjustment, 255 - color_adjustment, 255 - color_adjustment },
+          display.draw_vertical_line(edge_color,
             col,
             std::min(wall_start, last_wall->first),
             std::max(wall_end, last_wall->second));
         }
       } else {
-        // and some color
-        display.draw_vertical_line({ 128 - color_adjustment, 128 - color_adjustment, 255 - color_adjustment },
+        // Draw wall with its color
+        display.draw_vertical_line(adjusted_color,
           col,
           wall_start,
           wall_end);
 
         if (wall_height != height) {
-          // draw top and bottom points
-          display.draw({ col, wall_start }, { 255 - color_adjustment, 255 - color_adjustment, 255 - color_adjustment });
-          display.draw({ col, wall_end }, { 255 - color_adjustment, 255 - color_adjustment, 255 - color_adjustment });
+          // draw top and bottom points with edge highlighting
+          display.draw({ col, wall_start }, edge_color);
+          display.draw({ col, wall_end }, edge_color);
         }
-
       }
 
       last_wall.emplace(wall_start, wall_end);
@@ -75,7 +91,14 @@ void render(auto &display,
     } else {
       // Look for transition from wall to empty space, draw edge
       if (last_match) {
-        display.draw_vertical_line({ 255 - color_adjustment, 255 - color_adjustment, 255 - color_adjustment },
+        // Create edge color from the last segment's color
+        Color edge_color = {
+          static_cast<std::uint8_t>(std::min(255, std::get<0>(last_match->color) + 30) - color_adjustment),
+          static_cast<std::uint8_t>(std::min(255, std::get<1>(last_match->color) + 30) - color_adjustment),
+          static_cast<std::uint8_t>(std::min(255, std::get<2>(last_match->color) + 30) - color_adjustment)
+        };
+
+        display.draw_vertical_line(edge_color,
           col,
           last_wall->first,
           last_wall->second);

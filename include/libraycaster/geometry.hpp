@@ -7,9 +7,22 @@
 #include <optional>
 #include <span>
 #include <stdexcept>
+#include <tuple>
 #include <vector>
 
 namespace lefticus::raycaster {
+
+// RGB color as a tuple of three uint8_t values
+using Color = std::tuple<std::uint8_t, std::uint8_t, std::uint8_t>;
+
+// Average two colors together - useful for color blending
+[[nodiscard]] constexpr Color average_colors(const Color &c1, const Color &c2) {
+  return Color{
+    static_cast<std::uint8_t>((std::get<0>(c1) + std::get<0>(c2)) / 2),
+    static_cast<std::uint8_t>((std::get<1>(c1) + std::get<1>(c2)) / 2),
+    static_cast<std::uint8_t>((std::get<2>(c1) + std::get<2>(c2)) / 2)
+  };
+}
 template<std::floating_point FP> inline constexpr auto DISTANT_POINT_v = static_cast<FP>(1000);
 
 // Floating point math is hard, and trying to find a point on a line
@@ -59,6 +72,7 @@ template<std::floating_point FP> struct Segment
 {
   Point<FP> start;
   Point<FP> end;
+  Color color{255, 255, 255}; // Default to white
 
   [[nodiscard]] constexpr auto operator<=>(const Segment &) const noexcept = default;
 
