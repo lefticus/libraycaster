@@ -257,16 +257,18 @@ TEMPLATE_TEST_CASE("Test Intersect Ray To Diagonal", "[geometry]", float, double
 
 TEMPLATE_TEST_CASE("Test Camera Ray To Diagonal", "[geometry]", float, double, long double)
 {
-  const auto camera = Camera<TestType>{
-    lefticus::raycaster::Point<TestType>{ 10, 5 }, std::numbers::pi_v<TestType>, std::numbers::pi_v<TestType> / 4
+  const auto camera = lefticus::raycaster::Camera<TestType>{
+    lefticus::raycaster::Point<TestType>{ 10, 5 }, std::numbers::pi_v<TestType>
   };
+
+  const auto view_angle = std::numbers::pi_v<TestType>/4;
 
   const std::array segments{ lefticus::raycaster::Segment<TestType>{ lefticus::raycaster::Point<TestType>{ 0, 0 },
                                lefticus::raycaster::Point<TestType>{ 20, 0 } },
     lefticus::raycaster::Segment<TestType>{
       lefticus::raycaster::Point<TestType>{ 0, 0 }, lefticus::raycaster::Point<TestType>{ 40, -40 } } };
 
-  for (const auto &[ray, point] : camera.rays(10)) {
+  for (const auto &[ray, point] : camera.rays(10, view_angle)) {
     const auto intersections =
       lefticus::raycaster::intersect_ray(ray, std::span<const lefticus::raycaster::Segment<TestType>>(segments));
     CHECK(intersections.size() == 2);

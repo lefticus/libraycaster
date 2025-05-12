@@ -57,9 +57,8 @@ struct Bitmap : ftxui::Node
 
   void ComputeRequirement() override
   {
-    requirement_ = ftxui::Requirement{
-      .min_x = static_cast<int>(width_), .min_y = static_cast<int>(height_ / 2), .selected_box{ 0, 0, 0, 0 }
-    };
+    requirement_.min_x = static_cast<int>(width_);
+    requirement_.min_y = static_cast<int>(height_ / 2);
   }
 
   void Render(ftxui::Screen &screen) override

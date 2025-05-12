@@ -14,7 +14,7 @@ template<std::floating_point FP> inline constexpr auto DISTANT_POINT_v = static_
 
 // Floating point math is hard, and trying to find a point on a line
 // can result in some mismatches in floating point values, so we go for "close"
-template<std::floating_point FP> bool in_range(FP min_, FP max_, FP value)
+template<std::floating_point FP> constexpr bool in_range(FP min_, FP max_, FP value)
 {
   return ((min_ - static_cast<FP>(0.0000001)) <= value) and (value <= (max_ + static_cast<FP>(0.0000001)));
 }
