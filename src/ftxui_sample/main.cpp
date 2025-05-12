@@ -124,8 +124,8 @@ void game_iteration_canvas()
 {
   // this should probably have a `bitmap` helper function that does what cur_you expect
   // similar to the other parts of FTXUI
-  auto bm = std::make_shared<Bitmap>(60, 60);// NOLINT magic numbers
-  auto small_bm = std::make_shared<Bitmap>(60, 60);// NOLINT magic numbers
+  auto bm = std::make_shared<Bitmap>(80, 60);// NOLINT magic numbers
+  auto small_bm = std::make_shared<Bitmap>(40, 40);// NOLINT magic numbers
 
   double fps = 0;
 
