@@ -143,3 +143,127 @@ TEMPLATE_TEST_CASE("Renderer basic rendering", "[renderer]", float, double, long
   
   REQUIRE(display.vertical_lines.size() > 0);
 }
+
+TEMPLATE_TEST_CASE("Renderer edge case rendering", "[renderer]", float, double, long double)
+{
+  // Setup mock display
+  RendererMockDisplay<TestType> display(320, 240);
+
+  // Create test cases for various edge conditions
+
+  // Test case 1: No walls (empty map)
+  std::vector<lefticus::raycaster::Segment<TestType>> empty_walls;
+
+  lefticus::raycaster::Camera<TestType> camera{
+    lefticus::raycaster::Point<TestType>{ static_cast<TestType>(5), static_cast<TestType>(5) },
+    static_cast<TestType>(0)
+  };
+
+  lefticus::raycaster::render(
+    display,
+    display.width(),
+    display.height(),
+    std::span<const lefticus::raycaster::Segment<TestType>>(empty_walls),
+    camera
+  );
+
+  // Should clear the display but not draw any vertical lines
+  REQUIRE(display.lines_cleared);
+  REQUIRE(display.vertical_lines.empty());
+
+  // Test case 2: Very close wall (tests wall_height calculation edge case)
+  std::vector<lefticus::raycaster::Segment<TestType>> close_wall = {
+    lefticus::raycaster::Segment<TestType>{
+      lefticus::raycaster::Point<TestType>{ static_cast<TestType>(5), static_cast<TestType>(5.1) },
+      lefticus::raycaster::Point<TestType>{ static_cast<TestType>(6), static_cast<TestType>(5.1) }
+    }
+  };
+
+  display.vertical_lines.clear();
+  display.lines_cleared = false;
+
+  lefticus::raycaster::render(
+    display,
+    display.width(),
+    display.height(),
+    std::span<const lefticus::raycaster::Segment<TestType>>(close_wall),
+    camera
+  );
+
+  // Should have drawn some vertical lines for the very close wall
+  REQUIRE(display.lines_cleared);
+  REQUIRE(display.vertical_lines.size() > 0);
+
+  // Test case 3: Adjacent wall segments (tests edge handling)
+  std::vector<lefticus::raycaster::Segment<TestType>> adjacent_walls = {
+    // First wall
+    lefticus::raycaster::Segment<TestType>{
+      lefticus::raycaster::Point<TestType>{ static_cast<TestType>(5), static_cast<TestType>(10) },
+      lefticus::raycaster::Point<TestType>{ static_cast<TestType>(10), static_cast<TestType>(10) },
+      {255, 0, 0} // Red
+    },
+    // Adjacent wall (shares an endpoint)
+    lefticus::raycaster::Segment<TestType>{
+      lefticus::raycaster::Point<TestType>{ static_cast<TestType>(10), static_cast<TestType>(10) },
+      lefticus::raycaster::Point<TestType>{ static_cast<TestType>(10), static_cast<TestType>(5) },
+      {0, 255, 0} // Green
+    }
+  };
+
+  display.vertical_lines.clear();
+  display.lines_cleared = false;
+
+  // Place camera to see both walls
+  lefticus::raycaster::Camera<TestType> camera2{
+    lefticus::raycaster::Point<TestType>{ static_cast<TestType>(7), static_cast<TestType>(7) },
+    std::numbers::pi_v<TestType> / 4 // 45° angle
+  };
+
+  lefticus::raycaster::render(
+    display,
+    display.width(),
+    display.height(),
+    std::span<const lefticus::raycaster::Segment<TestType>>(adjacent_walls),
+    camera2
+  );
+
+  // Should have drawn vertical lines for both walls
+  REQUIRE(display.lines_cleared);
+  REQUIRE(display.vertical_lines.size() > 0);
+
+  // Test case 4: Walls at different distances (tests distance fog effect)
+  std::vector<lefticus::raycaster::Segment<TestType>> distance_walls = {
+    // Near wall
+    lefticus::raycaster::Segment<TestType>{
+      lefticus::raycaster::Point<TestType>{ static_cast<TestType>(5), static_cast<TestType>(7) },
+      lefticus::raycaster::Point<TestType>{ static_cast<TestType>(7), static_cast<TestType>(7) },
+      {255, 255, 255} // White
+    },
+    // Far wall
+    lefticus::raycaster::Segment<TestType>{
+      lefticus::raycaster::Point<TestType>{ static_cast<TestType>(5), static_cast<TestType>(15) },
+      lefticus::raycaster::Point<TestType>{ static_cast<TestType>(7), static_cast<TestType>(15) },
+      {255, 255, 255} // White
+    }
+  };
+
+  display.vertical_lines.clear();
+  display.lines_cleared = false;
+
+  lefticus::raycaster::Camera<TestType> camera3{
+    lefticus::raycaster::Point<TestType>{ static_cast<TestType>(6), static_cast<TestType>(5) },
+    static_cast<TestType>(0) // Looking north
+  };
+
+  lefticus::raycaster::render(
+    display,
+    display.width(),
+    display.height(),
+    std::span<const lefticus::raycaster::Segment<TestType>>(distance_walls),
+    camera3
+  );
+
+  // Should have drawn vertical lines for both walls
+  REQUIRE(display.lines_cleared);
+  REQUIRE(display.vertical_lines.size() > 0);
+}
