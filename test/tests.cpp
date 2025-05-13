@@ -3,6 +3,7 @@
 
 #include <libraycaster/camera.hpp>
 #include <libraycaster/geometry.hpp>
+#include "test_helpers.hpp"
 
 
 template<std::floating_point FP> struct Approx
@@ -257,9 +258,7 @@ TEMPLATE_TEST_CASE("Test Intersect Ray To Diagonal", "[geometry]", float, double
 
 TEMPLATE_TEST_CASE("Test Camera Ray To Diagonal", "[geometry]", float, double, long double)
 {
-  const auto camera = lefticus::raycaster::Camera<TestType>{
-    lefticus::raycaster::Point<TestType>{ 10, 5 }, std::numbers::pi_v<TestType>
-  };
+  const auto camera = setupTestCamera<TestType>(std::numbers::pi_v<TestType>, static_cast<TestType>(10), static_cast<TestType>(5));
 
   const auto view_angle = std::numbers::pi_v<TestType>/4;
 
@@ -299,10 +298,7 @@ TEMPLATE_TEST_CASE("Test Ray::end_point", "[geometry][non-constexpr]", float, do
 
 TEMPLATE_TEST_CASE("Test Camera rotate", "[geometry][non-constexpr]", float, double, long double)
 {
-  auto camera = lefticus::raycaster::Camera<TestType>{
-    lefticus::raycaster::Point<TestType>{ 0, 0 },
-    static_cast<TestType>(0)
-  };
+  auto camera = setupTestCamera<TestType>();
 
   // Test rotation by 90 degrees
   camera.rotate(std::numbers::pi_v<TestType> / 2);
@@ -323,10 +319,7 @@ TEMPLATE_TEST_CASE("Test Camera rotate", "[geometry][non-constexpr]", float, dou
 
 TEMPLATE_TEST_CASE("Test Camera rays", "[geometry][non-constexpr]", float, double, long double)
 {
-  const auto camera = lefticus::raycaster::Camera<TestType>{
-    lefticus::raycaster::Point<TestType>{ 0, 0 },
-    static_cast<TestType>(0)
-  };
+  const auto camera = setupTestCamera<TestType>();
 
   const auto fov = std::numbers::pi_v<TestType> / 2;  // 90 degrees
   const std::size_t num_rays = 5;
@@ -335,8 +328,7 @@ TEMPLATE_TEST_CASE("Test Camera rays", "[geometry][non-constexpr]", float, doubl
   int ray_count = 0;
   for (const auto &[ray, point] : camera.rays(num_rays, fov)) {
     // Verify ray starts at camera position
-    CHECK(ray.start.x == camera.location.x);
-    CHECK(ray.start.y == camera.location.y);
+    verifyRayStartsAtCamera(ray, camera);
 
     // Verify ray starts at camera position
     // Note: We don't check ray angle because in the current implementation

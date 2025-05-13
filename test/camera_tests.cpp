@@ -4,6 +4,7 @@
 
 #include <libraycaster/camera.hpp>
 #include <libraycaster/geometry.hpp>
+#include "test_helpers.hpp"
 
 using Catch::Approx;
 
@@ -16,9 +17,7 @@ auto ApproxValue(T value) {
 TEMPLATE_TEST_CASE("Camera movement with collisions", "[camera]", float, double, long double)
 {
   // Create a camera
-  lefticus::raycaster::Camera<TestType> camera;
-  camera.location = lefticus::raycaster::Point<TestType>{static_cast<TestType>(5.0), static_cast<TestType>(5.0)};
-  camera.direction = static_cast<TestType>(0.0); // facing forward/north
+  auto camera = setupTestCamera<TestType>(static_cast<TestType>(0.0), static_cast<TestType>(5.0), static_cast<TestType>(5.0)); // facing forward/north
 
   // Create some walls
   std::vector<lefticus::raycaster::Segment<TestType>> walls = {
@@ -35,14 +34,12 @@ TEMPLATE_TEST_CASE("Camera movement with collisions", "[camera]", float, double,
   };
 
   // Initial position check
-  REQUIRE(camera.location.x == static_cast<TestType>(5.0));
-  REQUIRE(camera.location.y == static_cast<TestType>(5.0));
+  verifyCameraAt(camera, static_cast<TestType>(5.0), static_cast<TestType>(5.0));
 
   // Try to move forward - should be blocked by wall
   camera.try_move(static_cast<TestType>(3.0), walls);
   // Position should not change
-  REQUIRE(camera.location.x == static_cast<TestType>(5.0));
-  REQUIRE(camera.location.y == static_cast<TestType>(5.0));
+  verifyCameraAt(camera, static_cast<TestType>(5.0), static_cast<TestType>(5.0));
 
   // Rotate to face right (east)
   camera.rotate(std::numbers::pi_v<TestType> / 2);
@@ -51,8 +48,7 @@ TEMPLATE_TEST_CASE("Camera movement with collisions", "[camera]", float, double,
   // Try to move right - should be blocked
   camera.try_move(static_cast<TestType>(3.0), walls);
   // Position should not change
-  REQUIRE(camera.location.x == static_cast<TestType>(5.0));
-  REQUIRE(camera.location.y == static_cast<TestType>(5.0));
+  verifyCameraAt(camera, static_cast<TestType>(5.0), static_cast<TestType>(5.0));
 
   // Rotate to face backward (south)
   camera.rotate(std::numbers::pi_v<TestType> / 2);
@@ -61,8 +57,7 @@ TEMPLATE_TEST_CASE("Camera movement with collisions", "[camera]", float, double,
   // Try to move backward - should succeed
   camera.try_move(static_cast<TestType>(2.0), walls);
   // Position should change - moved south
-  REQUIRE(camera.location.x == ApproxValue(5.0));
-  REQUIRE(camera.location.y == ApproxValue(3.0));
+  verifyCameraAt(camera, static_cast<TestType>(5.0), static_cast<TestType>(3.0));
 
   // Test rotate with negative angle
   camera.rotate(static_cast<TestType>(-std::numbers::pi_v<TestType>));
@@ -75,13 +70,11 @@ TEMPLATE_TEST_CASE("Camera movement with collisions", "[camera]", float, double,
   // Test movement with negative distance (should move backward)
   camera.try_move(static_cast<TestType>(-2.0), walls);
   // Should have moved north (opposite of current direction)
-  REQUIRE(camera.location.x == ApproxValue(5.0));
-  REQUIRE(camera.location.y == ApproxValue(5.0));
+  verifyCameraAt(camera, static_cast<TestType>(5.0), static_cast<TestType>(5.0));
 
   // Test movement with zero distance (should not move)
   camera.try_move(static_cast<TestType>(0.0), walls);
-  REQUIRE(camera.location.x == ApproxValue(5.0));
-  REQUIRE(camera.location.y == ApproxValue(5.0));
+  verifyCameraAt(camera, static_cast<TestType>(5.0), static_cast<TestType>(5.0));
 
   // Reset camera direction to north (0 radians)
   camera.direction = static_cast<TestType>(0.0);
@@ -90,8 +83,7 @@ TEMPLATE_TEST_CASE("Camera movement with collisions", "[camera]", float, double,
   std::vector<lefticus::raycaster::Segment<TestType>> empty_walls;
   camera.try_move(static_cast<TestType>(1.0), empty_walls);
   // Should move without collision
-  REQUIRE(camera.location.x == ApproxValue(5.0));
-  REQUIRE(camera.location.y == ApproxValue(6.0));
+  verifyCameraAt(camera, static_cast<TestType>(5.0), static_cast<TestType>(6.0));
 
   // Test with a wall that exactly intersects with the move path
   std::vector<lefticus::raycaster::Segment<TestType>> exactly_intersecting_walls = {
@@ -110,15 +102,12 @@ TEMPLATE_TEST_CASE("Camera movement with collisions", "[camera]", float, double,
   camera.try_move(static_cast<TestType>(2.0), exactly_intersecting_walls);
 
   // Position should not change
-  REQUIRE(camera.location.x == ApproxValue(old_x));
-  REQUIRE(camera.location.y == ApproxValue(old_y));
+  verifyCameraAt(camera, old_x, old_y);
 }
 
 TEMPLATE_TEST_CASE("Camera rays generation", "[camera]", float, double, long double)
 {
-  lefticus::raycaster::Camera<TestType> camera;
-  camera.location = lefticus::raycaster::Point<TestType>{static_cast<TestType>(0.0), static_cast<TestType>(0.0)};
-  camera.direction = static_cast<TestType>(0.0); // facing north
+  auto camera = setupTestCamera<TestType>(); // facing north
   
   // Test FOV and ray count
   const auto fov = std::numbers::pi_v<TestType> / 2; // 90 degrees
@@ -132,8 +121,7 @@ TEMPLATE_TEST_CASE("Camera rays generation", "[camera]", float, double, long dou
   
   for (const auto &[ray, point] : ray_range) {
     // Each ray should start at camera location
-    REQUIRE(ray.start.x == static_cast<TestType>(0.0));
-    REQUIRE(ray.start.y == static_cast<TestType>(0.0));
+    verifyRayStartsAtCamera(ray, camera);
     count++;
   }
   
@@ -148,8 +136,7 @@ TEMPLATE_TEST_CASE("Camera rays generation", "[camera]", float, double, long dou
   
   for (const auto &[ray, point] : ray_range2) {
     // Each ray should still start at camera location
-    REQUIRE(ray.start.x == static_cast<TestType>(0.0));
-    REQUIRE(ray.start.y == static_cast<TestType>(0.0));
+    verifyRayStartsAtCamera(ray, camera);
     count2++;
   }
   
@@ -172,8 +159,7 @@ TEMPLATE_TEST_CASE("Camera rays generation", "[camera]", float, double, long dou
 
   for (const auto &[ray, point] : ray_range4) {
     // Should be exactly in the middle of the FOV
-    REQUIRE(ray.start.x == static_cast<TestType>(0.0));
-    REQUIRE(ray.start.y == static_cast<TestType>(0.0));
+    verifyRayStartsAtCamera(ray, camera);
     count4++;
   }
 
@@ -206,9 +192,7 @@ TEMPLATE_TEST_CASE("Camera rays generation", "[camera]", float, double, long dou
 
 TEMPLATE_TEST_CASE("Camera rays special cases", "[camera]", float, double, long double)
 {
-  lefticus::raycaster::Camera<TestType> camera;
-  camera.location = lefticus::raycaster::Point<TestType>{static_cast<TestType>(0.0), static_cast<TestType>(0.0)};
-  camera.direction = static_cast<TestType>(0.0);
+  auto camera = setupTestCamera<TestType>();
 
   // Test zero count rays (corner case)
   auto zero_count_rays = camera.rays(0, static_cast<TestType>(1.0));
@@ -258,8 +242,7 @@ TEMPLATE_TEST_CASE("Camera rays special cases", "[camera]", float, double, long 
 
       for (const auto &[ray, _] : position_rays) {
         // Verify rays start at the correct position
-        REQUIRE(ray.start.x == camera.location.x);
-        REQUIRE(ray.start.y == camera.location.y);
+        verifyRayStartsAtCamera(ray, camera);
         count++;
       }
 
